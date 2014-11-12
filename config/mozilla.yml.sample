@@ -1,0 +1,10 @@
+# Copy this file to mozilla.yml and change the settings below
+
+database:
+  dbname: bugs_database
+  host: localhost
+  port: 3389
+  username: user
+  password: pass
+source:
+  path: /path-to/mozilla-central

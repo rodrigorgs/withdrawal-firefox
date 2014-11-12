@@ -1,0 +1,16 @@
+*.bak
+*.pyc
+*~
+
+config/*.yml
+
+doc/flow.*
+
+data/*
+!data/.gitkeep
+
+report/*
+!report/.gitkeep
+
+script/*.pdf
+script/figure
