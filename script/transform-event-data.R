@@ -17,7 +17,12 @@ event_data__bugreports <- events %>%
 	mutate(event = NA, source = "bugreports", commit = NA) %>%
 	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
 
-event_data <- rbind(event_data__commitlog, event_data__bugreports) %>%
+event_data__bugcreation <- bugs %>%
+	mutate(event = NA, source = "bugreports", commit = NA, user = reporter, time = initial.time, field = "creation", previousvalue = NA, currentvalue = description) %>%
+	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
+
+
+event_data <- rbind(event_data__commitlog, event_data__bugreports, event_data__bugcreation) %>%
 	arrange(time) %>%
 	mutate(event = sequence(n()), label = NA)
 
