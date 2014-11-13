@@ -41,7 +41,7 @@ time.str <- events$time
 
 # Bugzilla times are in PST (Pacific Standard Time, -0800).
 events$time <- as.POSIXct(paste0(time.str, " -0800"),
-	format="%Y-%m-%d %H:%M:%s %z", tz="UTC")
+	format="%Y-%m-%d %H:%M:%S %z", tz="UTC")
 
 #########
 
