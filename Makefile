@@ -1,7 +1,13 @@
-all: data/firefox-bugs.rds data/firefox-commits.rds data/firefox-events.rds data/mozilla-hg-log.bz2 report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html
+all: data/firefox-bugs.rds data/firefox-commits.rds data/firefox-events.rds data/firefox-fixes.rds data/mozilla-hg-log.bz2 report/detect-fix-commits.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html
 
 clean:
-	rm -f data/firefox-bugs.rds data/firefox-commits.rds data/firefox-events.rds data/mozilla-hg-log.bz2 report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html
+	rm -f data/firefox-bugs.rds data/firefox-commits.rds data/firefox-events.rds data/firefox-fixes.rds data/mozilla-hg-log.bz2 report/detect-fix-commits.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html
+
+data/firefox-fixes.rds: data/firefox-commits.rds data/firefox-bugs.rds script/detect-fix-commits.R
+	./run-script.rb script/detect-fix-commits.R
+
+report/detect-fix-commits.html: data/firefox-commits.rds data/firefox-bugs.rds script/detect-fix-commits.R
+	./run-script.rb script/detect-fix-commits.R
 
 data/firefox-bugs.rds:  script/load-firefox-bugs.R
 	./run-script.rb script/load-firefox-bugs.R
