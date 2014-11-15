@@ -14,12 +14,9 @@ db <- src_mysql(dbname = config$database$dbname,
   user = config$database$user,
   password = config$database$password)
 
-min.date <- "2009-01-01"
-max.date <- "2013-12-31"
-
 bugs <- tbl(db, "bugs") %>%
-  filter(creation_ts >= min.date,
-    creation_ts <= max.date,
+  filter(delta_ts >= config$dates$initial,
+    creation_ts <= config$dates$final,
     product_id %in% c(1, 21),
     resolution == "FIXED") %>%
   collect()

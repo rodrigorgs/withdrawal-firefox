@@ -11,7 +11,7 @@ pwd = FileUtils.pwd
 FileUtils.chdir(source_path)
 puts "cd #{source_path}"
 
-cmd = %q{hg log --template "{node|short} | {date|isodate} | {author} | {desc|firstline}\n" --date "2009-01-01 to 2013-12-31" | bzip2 > } + output_path
+cmd = %Q{hg log --template "{node|short} | {date|isodate} | {author} | {desc|firstline}\n" --date "#{config['dates']['initial']} to #{config['dates']['final']}" | bzip2 > } + output_path
 puts cmd
 system cmd 
 

@@ -8,3 +8,6 @@ database:
   password: pass
 source:
   path: /path-to/mozilla-central
+dates:
+  initial: 2007-01-01
+  final: 2015-01-01
