@@ -1,7 +1,10 @@
-all: data/firefox-backouts.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-event-data.rds data/firefox-events-complete.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
+all: data/firefox-backouts.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/analyses.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
 
 clean:
-	rm -f data/firefox-backouts.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-event-data.rds data/firefox-events-complete.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
+	rm -f data/firefox-backouts.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/analyses.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
+
+report/analyses.html: data/firefox-event-data.rds data/firefox-event-labels.rds script/analyses.R
+	./run-script.rb script/analyses.R
 
 data/firefox-backouts.rds: data/firefox-commits.rds script/detect-backout-commits.R
 	./run-script.rb script/detect-backout-commits.R
@@ -21,7 +24,7 @@ data/firefox-reviews.rds: data/firefox-events.rds script/detect-reviews.R
 report/detect-reviews.html: data/firefox-events.rds script/detect-reviews.R
 	./run-script.rb script/detect-reviews.R
 
-data/firefox-events-complete.rds: data/firefox-event-data.rds data/firefox-reviews.rds script/label-events.R
+data/firefox-event-labels.rds: data/firefox-event-data.rds data/firefox-reviews.rds script/label-events.R
 	./run-script.rb script/label-events.R
 
 report/label-events.html: data/firefox-event-data.rds data/firefox-reviews.rds script/label-events.R

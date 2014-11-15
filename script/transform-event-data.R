@@ -10,7 +10,8 @@ commit_data <- readRDS("../data/firefox-commit-data.rds")
 # Mix events, bugs, and commits
 
 event_data__commitlog <- commit_data %>%
-	mutate(event = NA, source = "commitlog", field = type, previousvalue = NA, currentvalue = message) %>%
+  filter(bug %in% events$bug) %>%
+  mutate(event = NA, source = "commitlog", field = type, previousvalue = NA, currentvalue = message) %>%
 	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
 
 event_data__bugreports <- events %>%
