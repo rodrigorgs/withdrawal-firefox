@@ -20,7 +20,7 @@ reviews <- events %>%
 	filter(!is.na(label) & label != '@') %>%
 	select(event, label)
 
-reviews$label[reviews$label == "?"] <- "review_ask"
+reviews$label[reviews$label == "?"] <- "review?"
 reviews$label[reviews$label == "+"] <- "review+"
 reviews$label[reviews$label == "-"] <- "review-"
 

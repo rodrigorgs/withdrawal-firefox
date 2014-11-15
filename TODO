@@ -1,0 +1,3 @@
+* Filter events: keep only from bugs that were eventually fixed
+* XXX: We have commit events that refer to bugs we do not have in our database,
+  because we loaded bugs within a period.

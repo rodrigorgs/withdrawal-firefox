@@ -24,9 +24,7 @@ event_data__bugcreation <- bugs %>%
 
 event_data <- rbind(event_data__commitlog, event_data__bugreports, event_data__bugcreation) %>%
 	arrange(time) %>%
-	mutate(event = sequence(n()), label = NA)
-
-# Label is review-, backout, reopen etc.
+	mutate(event = sequence(n()))
 
 ###
 
