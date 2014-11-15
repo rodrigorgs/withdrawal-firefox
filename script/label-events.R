@@ -17,32 +17,49 @@ data$label[data$field == "creation"] <- "create"
 data$label[data$field == "backout"] <- "backout"
 data$label[data$field == "fix"] <- "fix"
 
+data$label[data$review_status == "?"] <- "review?"
+data$label[data$review_status == "-"] <- "review-"
+data$label[data$review_status == "+"] <- "review+"
+
+# check if data is ok
+
+stopifnot(any(data$label == "review?"))
+stopifnot(any(data$label == "review+"))
+stopifnot(any(data$label == "review-"))
+stopifnot(any(data$label == "backout"))
+stopifnot(any(data$label == "fix"))
+stopifnot(any(data$label == "buildok"))
+stopifnot(any(data$label == "reopen"))
 table(data$label)
 
 ###
 
 # Now, more sophisticated labeling
 
-final <- data %>% arrange(bug, time)
+complete <- data %>% arrange(bug, time)
 
-final$prev_bug_status <- carry.events(final, label %in% c("buildok", "reopen", "create"), "label") %>% prevv()
-final$prev_commit_status <- carry.events(final, label %in% c("backout", "fix"), "label") %>% prevv()
-final$prev_review_status <- carry.events(final, label %in% c("review?", "review+", "review-"), "label") %>% prevv()
+complete$prev_bug_status <- carry.events(complete, label %in% c("buildok", "reopen", "create"), "label") %>% prevv()
+complete$prev_commit_status <- carry.events(complete, label %in% c("backout", "fix"), "label") %>% prevv()
+complete$prev_review_status <- carry.events(complete, label %in% c("review?", "review+", "review-"), "label") %>% prevv()
 
-final$prev_bug_status[final$label == "create"] <- NA
-final$prev_commit_status[final$label == "create"] <- NA
-final$prev_review_status[final$label == "create"] <- NA
+complete$prev_bug_status[complete$label == "create"] <- NA
+complete$prev_commit_status[complete$label == "create"] <- NA
+complete$prev_review_status[complete$label == "create"] <- NA
+
+###
+
+saveRDS(complete, "../data/firefox-events-complete.rds")
+
+#####################################
+
+xtabs(~ label + I(prev_bug_status), data=complete)
+xtabs(~ label + I(prev_commit_status), data=complete)
+xtabs(~ label + I(prev_review_status), data=complete)
+
 
 ##
 
-xtabs(~ label + I(prev_bug_status), data=final)
-xtabs(~ label + I(prev_commit_status), data=final)
-xtabs(~ label + I(prev_review_status), data=final)
-
-
-##
-
-z <- final %>%
+z <- complete %>%
   group_by(bug) %>%
   summarise(
     reopened = any(label == 'reopen' & prev_bug_status == "buildok"),
@@ -55,7 +72,7 @@ t
 
 ##
 
-z <- final %>%
+z <- complete %>%
   group_by(bug) %>%
   summarise(
     builtok = any(label == 'buildok'),

@@ -35,7 +35,9 @@ events <- ev %>%
 		field = name,
 		previousvalue = removed,
 		currentvalue = added) %>%
-	arrange(bug, time)
+	arrange(bug, time) %>%
+	mutate(event = sequence(n())) %>%
+	select(event, bug, user, time, field, previousvalue, currentvalue)
 
 time.str <- events$time
 
