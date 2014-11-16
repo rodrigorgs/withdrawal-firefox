@@ -1,15 +1,25 @@
 rm(list=ls())
 library(dplyr)
+library(Hmisc)
+library(zoo)
 
 bug_data <- readRDS("../data/firefox-bug-data.rds")
 
 ###
 
+#
+# `groupped_bug_data`: the result of 
+#
+#     bug_data %>% group_by(some_criteria...) %>% mutate(num_days = ...)
+#
+# Please note that we require a column called `num_days` with the number of
+# days within each group.
+#
 compute_summary <- function(groupped_bug_data) {
   ret <- groupped_bug_data %>%
     summarise(
       fixes = n(),
-      num_days = as.numeric(max(time_create) - min(time_create), units='days'),
+      num_days = max(num_days),
       fixes_per_day = fixes / num_days,
       #
       reopen_count = sum(has_reopen),
@@ -42,35 +52,67 @@ compute_summary <- function(groupped_bug_data) {
 }
 
 {
-  x <- bug_data %>%
-    filter(time_first_fix >= '2009-01-01' & time_first_fix <= '2013-06-30') %>%
+  min_date <- '2009-01-01'
+  max_date <- '2013-07-01'
+
+  data_month_first_fix <- bug_data %>%
+    filter(time_first_fix >= min_date & time_first_fix < max_date) %>%
     mutate(month = strftime(time_first_fix, "%Y-%m", origin=origin)) %>%
     group_by(month) %>%
-    compute_summary()
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
 
-  # TODO: also compute taking time_first_reopen and time_first_backout as reference
+  data_month_first_buildok <- bug_data %>%
+    filter(time_first_buildok >= min_date & time_first_buildok < max_date) %>%
+    mutate(month = strftime(time_first_buildok, "%Y-%m", origin=origin)) %>%
+    group_by(month) %>%
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
+
+  data_month_first_reopen <- bug_data %>%
+    filter(time_first_reopen >= min_date & time_first_reopen < max_date) %>%
+    mutate(month = strftime(time_first_reopen, "%Y-%m", origin=origin)) %>%
+    group_by(month) %>%
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
+  
+  data_month_first_backout <- bug_data %>%
+    filter(time_first_backout >= min_date & time_first_backout < max_date) %>%
+    mutate(month = strftime(time_first_backout, "%Y-%m", origin=origin)) %>%
+    group_by(month) %>%
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
+
+  data_month_create <- bug_data %>%
+    filter(time_create >= min_date & time_create < max_date) %>%
+    mutate(month = strftime(time_create, "%Y-%m", origin=origin)) %>%
+    group_by(month) %>%
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
 }
 
 ###
 
-plot(x$reopens_per_day, type='l')
-plot(x$backouts_per_day, type='l')
-plot(x$fixes_per_day, type='l')
+plot(data_month_first_fix$fixes_per_day ~ data_month_first_fix$month, type='l')
+#
+plot(data_month_first_reopen$reopens_per_day ~ data_month_first_fix$month, type='l')
+plot(data_month_first_backout$backouts_per_day ~ data_month_first_fix$month, type='l')
 
-plot(x$reopen_rate, type='l')
-plot(x$backout_rate, type='l')
-plot(x$early_backout_rate, type='l', col=1, ylim=c(0, 0.11))
-lines(x$late_backout_rate, col=2)
+plot(data_month_first_fix$reopen_rate ~ data_month_first_fix$month, type='l')
+plot(data_month_first_fix$backout_rate ~ data_month_first_fix$month, type='l')
+plot(data_month_first_fix$early_backout_rate ~ data_month_first_fix$month, type='l', col=1, ylim=c(0, 0.11))
+lines(data_month_first_fix$late_backout_rate ~ data_month_first_fix$month, col=2)
 
-plot(x$median_hours_to_buildok, type='l')
-plot(x$median_hours_to_fix, type='l')
-plot(x$median_hours_to_reopen, type='l')
-plot(x$median_hours_to_backout, type='l')
-
-# plot(x$mean_hours_to_buildok, type='l')
-# plot(x$mean_hours_to_fix, type='l')
-# plot(x$mean_hours_to_reopen, type='l')
-# plot(x$mean_hours_to_backout, type='l')
+plot(data_month_create$median_hours_to_buildok ~ data_month_first_fix$month, type='l')
+plot(data_month_create$median_hours_to_fix ~ data_month_first_fix$month, type='l')
+#
+plot(data_month_first_buildok$median_hours_to_reopen ~ data_month_first_fix$month, type='l')
+plot(data_month_first_fix$median_hours_to_backout ~ data_month_first_fix$month, type='l')
 
 # hist(bug_data$hours_to_buildok)
 # hist(bug_data$hours_to_reopen)
