@@ -45,11 +45,24 @@ compute_summary <- function(groupped_bug_data) {
       #
       median_hours_to_fix = median(hours_to_fix, na.rm=T),
       median_hours_to_refix = median(hours_to_refix, na.rm=T),
+      median_p_hours_to_refix = median(hours_to_refix / hours_to_fix, na.rm=T),
       median_hours_to_backout = median(hours_to_backout, na.rm=T),
       #
       median_hours_to_reopen = median(hours_to_reopen, na.rm=T),
       median_hours_to_buildok = median(hours_to_buildok, na.rm=T),
+      median_p_hours_to_rebuildok = median(hours_to_rebuildok / hours_to_buildok, na.rm=T),
       median_hours_to_rebuildok = median(hours_to_rebuildok, na.rm=T),
+      #
+      # Bad fix etc.
+      median_hours_to_badfix = median(ifelse(has_backout, hours_to_fix, NA), na.rm=T),
+      median_p_hours_to_badfix = median_hours_to_badfix / median_hours_to_fix,
+      #
+      median_hours_to_badbuildok = median(ifelse(has_reopen, hours_to_buildok, NA), na.rm=T),
+      median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,
+      #
+      median_hours_to_badbuildok = median(ifelse(has_reopen, hours_to_buildok, NA), na.rm=T),
+      median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,      
+      #
       #
       mean_hours_to_fix = mean(hours_to_fix, na.rm=T),
       mean_hours_to_backout = mean(hours_to_backout, na.rm=T),
@@ -120,28 +133,170 @@ myplot <- function(data, y, x, ylim=NULL, ...) {
   }
 
   plot(data[[x]], data[[y]], type='l', ylim=ylim, xlab=x, ylab=y, ...)
+
+  lo <- loess(data[[y]] ~ seq(data[[x]]))
+  lines(y=predict(lo), x=data[[x]], lwd=0.5, lty=2, ...)
 }
 mylines <- function(data, y, x, ...) {
   lines(data[[x]], data[[y]], ...)
+  lo <- loess(data[[y]] ~ seq(data[[x]]))
+  lines(y=predict(lo), x=data[[x]], lwd=0.5, lty=2, ...)
 }
 
+#' # Facet 1: Productivity
+#'
+
+#' ## fixes per day
+
 myplot(data_month_first_fix, "fixes_per_day", "month")
-#
+
+#' The number of fixes has been increasing, from about 15/day to about 40/day.
+#' This trend is highly correlated with the increase in the number of programmers.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## reopens per day
+
 myplot(data_month_first_reopen, "reopens_per_day", "month")
+
+#' On average, one bug is reopened every day.
+#' No significant change in number of reopens per day.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## backouts per day
+
 myplot(data_month_first_backout, "backouts_per_day", "month")
 
+#' On average, 1 to 4 bugs are backed out every day.
+#' The number of backout per day increased signifcantly, from 1/day to 3 or 4/day.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' # Facet 2: Efficacy
+
+#' ## reopening rate
+
 myplot(data_month_first_fix, "reopen_rate", "month")
+
+#' The reopening rate is decreasing.
+#' Since bug reopening can only occur after a successful build, this result
+#' may be an indicator that automated testing has become more effective,
+#' improving early detection of problems.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## backout rate
+
 myplot(data_month_first_fix, "backout_rate", "month")
+
+#' About 8% of the fixes are eventually backed out.
+#' The backout rate seems to have increased a little.
+#' Let's break it down into early and late backout rate.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## early & late backout rate
+
 myplot(data_month_first_fix, "early_backout_rate", "month")
 mylines(data_month_first_fix, "late_backout_rate", "month", col=2)
+legend("topleft", c("early", "late"), lwd=1, col=c(1,2))
+
+#' The early backout rate increased, and the late backout rate decreased.
+#'
+#' The increase in **early backout rate** can be explained by
+#' 
+#' * better testing tools
+#' * creation of sheriff-managed integration repositories
+#'   * testing before commit is less comprehensive (cultural change)
+#'
+#' The increase in early backout rate does not cause significant overhead,
+#' since it means that the inappropiate patch was backed out before getting
+#' into mozilla-central, the repository from which developers base their patches.
+#'
+#' The decrease in **late backout rate** can be explained by better 
+#' testing tools: automated testing detects more problems than before.
+#'
+#' The decrease in late backout rate comes with an overhead reduction, since
+#' late backouts are associated with more severe impacts:
+#'
+#' * the longer the time-to-backout, the more difficult it is for developers to
+#'   remember the bug fix context and set up their environments.
+#' * with integration branches, it means that an inappropriate patch was merged
+#'   into mozilla-central, disturbing developers' work.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' # Facet 1: Efficiency (time)
+
+#' ## time-to-fix and variants
 
 myplot(data_month_create, "median_hours_to_buildok", "month")
 mylines(data_month_first_reopen, "median_hours_to_rebuildok", "month", col=2)
 myplot(data_month_create, "median_hours_to_fix", "month")
 mylines(data_month_first_backout, "median_hours_to_refix", "month", col=2)
-#
+
+myplot(data_month_first_backout, "median_p_hours_to_refix", "month")
+myplot(data_month_first_reopen, "median_p_hours_to_rebuildok", "month")
+
+#' The time to create a fix has reduced. TODO: why? so what?
+#'
+#' Discussion: with short releases, do developers rush less, since the next 
+#' release is only 6 weeks away?
+#'
+#' The second fix is about 85% faster than the first one.
+#' The ratio between time-to-first-fix and time-to-second-fix is reducing?
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## time-to-bad-fix
+
+myplot(data_month_create, "median_hours_to_badfix", "month")
+mylines(data_month_create, "median_hours_to_fix", "month", col=2)
+legend("topleft", c("bad fix", "fix"), lwd=1, col=c(1,2))
+myplot(data_month_create, "median_p_hours_to_badfix", "month")
+
+#' A bad fix takes longer 2x to 3x longer.
+#' Bad fix-time is reducing.'
+
+#' ## time-to-bad-buildok'
+
+myplot(data_month_create, "median_hours_to_badbuildok", "month")
+mylines(data_month_create, "median_hours_to_buildok", "month", col=2)
+legend("topleft", c("bad buildok", "buildok"), lwd=1, col=c(1,2))
+myplot(data_month_create, "median_p_hours_to_badbuildok", "month")
+
+
+#'
+#' ---------------------------------------------------------------------------
+#'
+
+#' ## time-to-reopen and time-to-backout
+
 myplot(data_month_first_buildok, "median_hours_to_reopen", "month")
 myplot(data_month_first_fix, "median_hours_to_backout", "month")
+
+#' A typical bug takes about 5 hours to be backed out (if it is ever backed out)
+#' 
+#' There was a spike in time-to-backout in late-2010/early-2011.
+
+#'
+#' ---------------------------------------------------------------------------
+#'
 
 myplot(data_month_first_review_ask, "review_ask_rate", "month")
 myplot(data_month_first_review_ask, "review_plus_rate", "month")
@@ -174,6 +329,8 @@ mosaic(~ has_review_minus + has_early_backout, data=bug_data, direction='v', sha
 mosaic(~ has_review_minus + has_late_backout, data=bug_data, direction='v', shade=T)
 mosaic(~ has_review_minus + has_reopen, data=bug_data, direction='v', shade=T)
 fisher.test(xtabs(~ has_review_minus + has_backout, data=bug_data))
+
+#' There's an association between review- and backout/reopen
 
 # hist(bug_data$hours_to_buildok)
 # hist(bug_data$hours_to_reopen)
