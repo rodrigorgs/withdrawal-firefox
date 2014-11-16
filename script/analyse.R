@@ -38,6 +38,11 @@ compute_summary <- function(groupped_bug_data) {
       late_backout_rate = mean(has_late_backout),
       late_backouts_per_day = late_backout_count / num_days,
       #
+      review_minus_count = sum(has_review_minus),
+      review_minus_rate = sum(has_review_ask & has_review_minus) / sum(has_review_ask),
+      review_plus_rate = sum(has_review_ask & has_review_plus) / sum(has_review_ask),
+      review_ask_rate = mean(has_review_ask),
+      #
       median_hours_to_fix = median(hours_to_fix, na.rm=T),
       median_hours_to_backout = median(hours_to_backout, na.rm=T),
       median_hours_to_reopen = median(hours_to_reopen, na.rm=T),
@@ -57,7 +62,7 @@ compute_summary <- function(groupped_bug_data) {
 
   data_month_first_fix <- bug_data %>%
     filter(time_first_fix >= min_date & time_first_fix < max_date) %>%
-    mutate(month = strftime(time_first_fix, "%Y-%m", origin=origin)) %>%
+    mutate(month = strftime(time_first_fix, "%Y-%m")) %>%
     group_by(month) %>%
     mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
     compute_summary() %>%
@@ -65,7 +70,7 @@ compute_summary <- function(groupped_bug_data) {
 
   data_month_first_buildok <- bug_data %>%
     filter(time_first_buildok >= min_date & time_first_buildok < max_date) %>%
-    mutate(month = strftime(time_first_buildok, "%Y-%m", origin=origin)) %>%
+    mutate(month = strftime(time_first_buildok, "%Y-%m")) %>%
     group_by(month) %>%
     mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
     compute_summary() %>%
@@ -73,7 +78,7 @@ compute_summary <- function(groupped_bug_data) {
 
   data_month_first_reopen <- bug_data %>%
     filter(time_first_reopen >= min_date & time_first_reopen < max_date) %>%
-    mutate(month = strftime(time_first_reopen, "%Y-%m", origin=origin)) %>%
+    mutate(month = strftime(time_first_reopen, "%Y-%m")) %>%
     group_by(month) %>%
     mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
     compute_summary() %>%
@@ -81,7 +86,7 @@ compute_summary <- function(groupped_bug_data) {
   
   data_month_first_backout <- bug_data %>%
     filter(time_first_backout >= min_date & time_first_backout < max_date) %>%
-    mutate(month = strftime(time_first_backout, "%Y-%m", origin=origin)) %>%
+    mutate(month = strftime(time_first_backout, "%Y-%m")) %>%
     group_by(month) %>%
     mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
     compute_summary() %>%
@@ -89,7 +94,15 @@ compute_summary <- function(groupped_bug_data) {
 
   data_month_create <- bug_data %>%
     filter(time_create >= min_date & time_create < max_date) %>%
-    mutate(month = strftime(time_create, "%Y-%m", origin=origin)) %>%
+    mutate(month = strftime(time_create, "%Y-%m")) %>%
+    group_by(month) %>%
+    mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
+    compute_summary() %>%
+    mutate(month = as.yearmon(month))
+
+  data_month_first_review_ask <- bug_data %>%
+    filter(time_first_review_ask >= min_date & time_first_review_ask < max_date) %>%
+    mutate(month = strftime(time_first_review_ask, "%Y-%m")) %>%
     group_by(month) %>%
     mutate(num_days = monthDays(as.Date(paste0(month, "-01")))) %>%
     compute_summary() %>%
@@ -98,7 +111,7 @@ compute_summary <- function(groupped_bug_data) {
 
 ###
 
-plot(data_month_first_fix$fixes_per_day ~ data_month_first_fix$month, type='l')
+plot(data_month_first_fix$fixes_per_day ~ data_month_first_fix$month, type='l', ylim=c(0,41))
 #
 plot(data_month_first_reopen$reopens_per_day ~ data_month_first_fix$month, type='l')
 plot(data_month_first_backout$backouts_per_day ~ data_month_first_fix$month, type='l')
@@ -113,6 +126,12 @@ plot(data_month_create$median_hours_to_fix ~ data_month_first_fix$month, type='l
 #
 plot(data_month_first_buildok$median_hours_to_reopen ~ data_month_first_fix$month, type='l')
 plot(data_month_first_fix$median_hours_to_backout ~ data_month_first_fix$month, type='l')
+
+plot(data_month_first_review_ask$review_ask_rate ~ data_month_first_fix$month, type='l', ylim=c(0,1))
+plot(data_month_first_review_ask$review_minus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,0.2))
+plot(data_month_first_review_ask$review_plus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,1))
+
+# TODO: correlations
 
 # hist(bug_data$hours_to_buildok)
 # hist(bug_data$hours_to_reopen)
