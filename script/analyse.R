@@ -114,27 +114,38 @@ compute_summary <- function(groupped_bug_data) {
 
 ###
 
-plot(data_month_first_fix$fixes_per_day ~ data_month_first_fix$month, type='l', ylim=c(0,41))
+myplot <- function(data, y, x, ylim=NULL, ...) {
+  if (is.null(ylim)) {
+    ylim <- c(0, max(data[[y]]))
+  }
+
+  plot(data[[x]], data[[y]], type='l', ylim=ylim, xlab=x, ylab=y, ...)
+}
+mylines <- function(data, y, x, ...) {
+  lines(data[[x]], data[[y]], ...)
+}
+
+myplot(data_month_first_fix, "fixes_per_day", "month")
 #
-plot(data_month_first_reopen$reopens_per_day ~ data_month_first_reopen$month, type='l', ylim=c(0, 3))
-plot(data_month_first_backout$backouts_per_day ~ data_month_first_backout$month, type='l', ylim=c(0, 5))
+myplot(data_month_first_reopen, "reopens_per_day", "month")
+myplot(data_month_first_backout, "backouts_per_day", "month")
 
-plot(data_month_first_fix$reopen_rate ~ data_month_first_fix$month, type='l', ylim=c(0, 0.12))
-plot(data_month_first_fix$backout_rate ~ data_month_first_fix$month, type='l', ylim=c(0, 0.12))
-plot(data_month_first_fix$early_backout_rate ~ data_month_first_fix$month, type='l', col=1, ylim=c(0, 0.11))
-lines(data_month_first_fix$late_backout_rate ~ data_month_first_fix$month, col=2)
+myplot(data_month_first_fix, "reopen_rate", "month")
+myplot(data_month_first_fix, "backout_rate", "month")
+myplot(data_month_first_fix, "early_backout_rate", "month")
+mylines(data_month_first_fix, "late_backout_rate", "month", col=2)
 
-plot(data_month_create$median_hours_to_buildok ~ data_month_create$month, type='l', ylim=c(0, 600))
-lines(data_month_first_reopen$median_hours_to_rebuildok ~ data_month_first_reopen$month, col=2)
-plot(data_month_create$median_hours_to_fix ~ data_month_create$month, type='l', ylim=c(0, 500))
-lines(data_month_first_backout$median_hours_to_refix ~ data_month_first_backout$month, col=2)
+myplot(data_month_create, "median_hours_to_buildok", "month")
+mylines(data_month_first_reopen, "median_hours_to_rebuildok", "month", col=2)
+myplot(data_month_create, "median_hours_to_fix", "month")
+mylines(data_month_first_backout, "median_hours_to_refix", "month", col=2)
 #
-plot(data_month_first_buildok$median_hours_to_reopen ~ data_month_first_buildok$month, type='l', ylim=c(0,45))
-plot(data_month_first_fix$median_hours_to_backout ~ data_month_first_fix$month, type='l', ylim=c(0,25))
+myplot(data_month_first_buildok, "median_hours_to_reopen", "month")
+myplot(data_month_first_fix, "median_hours_to_backout", "month")
 
-plot(data_month_first_review_ask$review_ask_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,1))
-plot(data_month_first_review_ask$review_plus_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,1))
-plot(data_month_first_review_ask$review_minus_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,0.2))
+myplot(data_month_first_review_ask, "review_ask_rate", "month")
+myplot(data_month_first_review_ask, "review_plus_rate", "month")
+myplot(data_month_first_review_ask, "review_minus_rate", "month")
 
 # Correlations
 
