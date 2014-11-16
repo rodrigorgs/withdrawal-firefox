@@ -63,6 +63,10 @@ compute_summary <- function(groupped_bug_data) {
       median_hours_to_badbuildok = median(ifelse(has_reopen, hours_to_buildok, NA), na.rm=T),
       median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,      
       #
+      # review
+      median_hours_to_review_plus = median(hours_to_review_plus, na.rm=T),
+      median_hours_to_review_minus = median(hours_to_review_minus, na.rm=T),
+      #
       #
       mean_hours_to_fix = mean(hours_to_fix, na.rm=T),
       mean_hours_to_backout = mean(hours_to_backout, na.rm=T),
@@ -298,11 +302,22 @@ myplot(data_month_first_fix, "median_hours_to_backout", "month")
 #' ---------------------------------------------------------------------------
 #'
 
+#' # Reviews
+
 myplot(data_month_first_review_ask, "review_ask_rate", "month")
 myplot(data_month_first_review_ask, "review_plus_rate", "month")
 myplot(data_month_first_review_ask, "review_minus_rate", "month")
 
-# Correlations
+#' All bug fixes are reviewed. Almost all receive a review+.
+#' Between 10 and 15% ever receive a review-. The number seems to be reducing.
+
+myplot(data_month_first_review_ask, "median_hours_to_review_minus", "month")
+mylines(data_month_first_review_ask, "median_hours_to_review_plus", "month", col=2)
+legend("topleft", c("review-", "review+"), lwd=1, col=c(1,2))
+
+#' Negative reviews take longer.
+
+#' # Correlations
 
 x <- data_month_first_fix %>%
   select(median_hours_to_buildok, median_hours_to_fix, median_hours_to_reopen, median_hours_to_backout,

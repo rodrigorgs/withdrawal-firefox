@@ -72,6 +72,9 @@ col <- "time_review_minus"; events[!(events$label == "review-"), col] <- NA
       hours_to_reopen = as.numeric(time_first_reopen - time_first_buildok, units='hours'),
       hours_to_backout = as.numeric(time_first_backout - time_first_fix, units='hours'),
       #
+      hours_to_review_plus = as.numeric(time_first_review_plus - time_first_review_ask, units='hours'),
+      hours_to_review_minus = as.numeric(time_first_review_minus - time_first_review_ask, units='hours'),
+      #
       has_reopen = !is.na(time_first_reopen),
       has_fix = !is.na(time_first_fix),
       has_backout = !is.na(time_first_backout),
