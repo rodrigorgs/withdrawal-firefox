@@ -131,7 +131,24 @@ plot(data_month_first_review_ask$review_ask_rate ~ data_month_first_fix$month, t
 plot(data_month_first_review_ask$review_minus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,0.2))
 plot(data_month_first_review_ask$review_plus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,1))
 
-# TODO: correlations
+# Correlations
+
+x <- data_month_first_fix %>%
+  select(median_hours_to_buildok, median_hours_to_fix, median_hours_to_reopen, median_hours_to_backout,
+    reopen_count, backout_count, early_backout_count, late_backout_count)
+library(PerformanceAnalytics)
+chart.Correlation(x, method='spearman')
+
+# Associations
+
+x <- bug_data %>%
+  select(has_backout, has_reopen, has_review_minus, has_early_backout, has_late_backout)
+library(vcd)
+mosaic(~ has_review_minus + has_backout, data=bug_data, direction='v', shade=T)
+mosaic(~ has_review_minus + has_early_backout, data=bug_data, direction='v', shade=T)
+mosaic(~ has_review_minus + has_late_backout, data=bug_data, direction='v', shade=T)
+mosaic(~ has_review_minus + has_reopen, data=bug_data, direction='v', shade=T)
+
 
 # hist(bug_data$hours_to_buildok)
 # hist(bug_data$hours_to_reopen)
