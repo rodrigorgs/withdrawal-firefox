@@ -44,9 +44,12 @@ compute_summary <- function(groupped_bug_data) {
       review_ask_rate = mean(has_review_ask),
       #
       median_hours_to_fix = median(hours_to_fix, na.rm=T),
+      median_hours_to_refix = median(hours_to_refix, na.rm=T),
       median_hours_to_backout = median(hours_to_backout, na.rm=T),
+      #
       median_hours_to_reopen = median(hours_to_reopen, na.rm=T),
       median_hours_to_buildok = median(hours_to_buildok, na.rm=T),
+      median_hours_to_rebuildok = median(hours_to_rebuildok, na.rm=T),
       #
       mean_hours_to_fix = mean(hours_to_fix, na.rm=T),
       mean_hours_to_backout = mean(hours_to_backout, na.rm=T),
@@ -113,31 +116,42 @@ compute_summary <- function(groupped_bug_data) {
 
 plot(data_month_first_fix$fixes_per_day ~ data_month_first_fix$month, type='l', ylim=c(0,41))
 #
-plot(data_month_first_reopen$reopens_per_day ~ data_month_first_fix$month, type='l')
-plot(data_month_first_backout$backouts_per_day ~ data_month_first_fix$month, type='l')
+plot(data_month_first_reopen$reopens_per_day ~ data_month_first_reopen$month, type='l', ylim=c(0, 3))
+plot(data_month_first_backout$backouts_per_day ~ data_month_first_backout$month, type='l', ylim=c(0, 5))
 
-plot(data_month_first_fix$reopen_rate ~ data_month_first_fix$month, type='l')
-plot(data_month_first_fix$backout_rate ~ data_month_first_fix$month, type='l')
+plot(data_month_first_fix$reopen_rate ~ data_month_first_fix$month, type='l', ylim=c(0, 0.12))
+plot(data_month_first_fix$backout_rate ~ data_month_first_fix$month, type='l', ylim=c(0, 0.12))
 plot(data_month_first_fix$early_backout_rate ~ data_month_first_fix$month, type='l', col=1, ylim=c(0, 0.11))
 lines(data_month_first_fix$late_backout_rate ~ data_month_first_fix$month, col=2)
 
-plot(data_month_create$median_hours_to_buildok ~ data_month_first_fix$month, type='l')
-plot(data_month_create$median_hours_to_fix ~ data_month_first_fix$month, type='l')
+plot(data_month_create$median_hours_to_buildok ~ data_month_create$month, type='l', ylim=c(0, 600))
+lines(data_month_first_reopen$median_hours_to_rebuildok ~ data_month_first_reopen$month, col=2)
+plot(data_month_create$median_hours_to_fix ~ data_month_create$month, type='l', ylim=c(0, 500))
+lines(data_month_first_backout$median_hours_to_refix ~ data_month_first_backout$month, col=2)
 #
-plot(data_month_first_buildok$median_hours_to_reopen ~ data_month_first_fix$month, type='l')
-plot(data_month_first_fix$median_hours_to_backout ~ data_month_first_fix$month, type='l')
+plot(data_month_first_buildok$median_hours_to_reopen ~ data_month_first_buildok$month, type='l', ylim=c(0,45))
+plot(data_month_first_fix$median_hours_to_backout ~ data_month_first_fix$month, type='l', ylim=c(0,25))
 
-plot(data_month_first_review_ask$review_ask_rate ~ data_month_first_fix$month, type='l', ylim=c(0,1))
-plot(data_month_first_review_ask$review_minus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,0.2))
-plot(data_month_first_review_ask$review_plus_rate ~ data_month_first_fix$month, type='l', ylim=c(0,1))
+plot(data_month_first_review_ask$review_ask_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,1))
+plot(data_month_first_review_ask$review_plus_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,1))
+plot(data_month_first_review_ask$review_minus_rate ~ data_month_first_review_ask$month, type='l', ylim=c(0,0.2))
 
 # Correlations
 
 x <- data_month_first_fix %>%
   select(median_hours_to_buildok, median_hours_to_fix, median_hours_to_reopen, median_hours_to_backout,
+    median_hours_to_rebuildok, median_hours_to_refix,
     reopen_count, backout_count, early_backout_count, late_backout_count)
 library(PerformanceAnalytics)
 chart.Correlation(x, method='spearman')
+
+a <- subset(bug_data, !is.na(hours_to_refix) & !is.na(hours_to_backout))
+with(a, cor.test(hours_to_refix, hours_to_backout), method='spearman')
+with(a, plot(y=hours_to_refix, x=hours_to_backout))
+#
+a <- subset(bug_data, !is.na(hours_to_rebuildok) & !is.na(hours_to_reopen))
+with(a, cor.test(hours_to_rebuildok, hours_to_reopen), method='spearman')
+with(a, plot(y=hours_to_rebuildok, x=hours_to_reopen))
 
 # Associations
 
@@ -148,7 +162,7 @@ mosaic(~ has_review_minus + has_backout, data=bug_data, direction='v', shade=T)
 mosaic(~ has_review_minus + has_early_backout, data=bug_data, direction='v', shade=T)
 mosaic(~ has_review_minus + has_late_backout, data=bug_data, direction='v', shade=T)
 mosaic(~ has_review_minus + has_reopen, data=bug_data, direction='v', shade=T)
-
+fisher.test(xtabs(~ has_review_minus + has_backout, data=bug_data))
 
 # hist(bug_data$hours_to_buildok)
 # hist(bug_data$hours_to_reopen)
