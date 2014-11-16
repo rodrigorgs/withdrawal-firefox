@@ -43,8 +43,18 @@ events$time_review_minus <- events$time; events[events$label != "review-", "time
       time_first_late_backout = min(time_late_backout, na.rm=T),
       time_first_review_ask = min(time_review_ask, na.rm=T),
       time_first_review_plus = min(time_review_plus, na.rm=T),
-      time_first_review_minus = min(time_review_minus, na.rm=T)) %>%
+      time_first_review_minus = min(time_review_minus, na.rm=T),
+      num_backouts = sum(label == "backout"),
+      num_fixes = sum(label == "fix"),
+      num_reopens = sum(label == "reopen"),
+      num_buildoks = sum(label == "buildok")) %>%
     mutate(
+      hours_to_fix = as.numeric(time_first_fix - time_create, units='hours'),
+      hours_to_buildok = as.numeric(time_first_buildok - time_create, units='hours'),
+      #
+      hours_to_reopen = as.numeric(time_first_reopen - time_first_buildok, units='hours'),
+      hours_to_backout = as.numeric(time_first_backout - time_first_fix, units='hours'),
+      #
       has_reopen = !is.na(time_first_reopen),
       has_fix = !is.na(time_first_fix),
       has_backout = !is.na(time_first_backout),
