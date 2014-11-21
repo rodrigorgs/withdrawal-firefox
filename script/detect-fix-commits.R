@@ -3,7 +3,6 @@ library(dplyr)
 library(stringr)
 
 commits <- readRDS("../data/firefox-commits.rds")
-bugs <- readRDS("../data/firefox-bugs.rds")
 
 ###
 
