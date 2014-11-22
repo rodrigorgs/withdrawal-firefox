@@ -45,6 +45,7 @@ compute_summary <- function(groupped_bug_data) {
       #
       review_minus_count = sum(has_review_minus),
       review_minus_rate = sum(has_review_ask & has_review_minus) / sum(has_review_ask),
+      review_minus_per_day = review_minus_count / num_days,
       review_plus_rate = sum(has_review_ask & has_review_plus) / sum(has_review_ask),
       review_ask_rate = mean(has_review_ask),
       #
@@ -135,6 +136,19 @@ rowify_continuous <- function(title, x, reference_time_column, column) {
     )
   strvalues
 }
+rowify_count <- function(title, x, reference_time_column, column) {
+  z <- x %>% mutate_("time" = reference_time_column) %>% group_by_release_type() %>% compute_summary()
+  planned <- z[z$release_type == 'planned',][[column]]
+  rapid <- z[z$release_type == 'rapid',][[column]]
+  # pvalue <- wilcox.test(planned, rapid)$p.value
+
+  strvalues <- c(
+    title,
+    sprintf("%3.2f", planned),
+    sprintf("%3.2f", rapid),
+    "N/A")
+  strvalues
+}
 
 # PRODUCTIVITY
 #   fixes per day
@@ -145,6 +159,12 @@ rowify_continuous <- function(title, x, reference_time_column, column) {
 {
   headers <- c("", "traditional", "rapid", "significance")
   tab <- headers
+
+  tab <- c("PRODUCTIVITY", "", "", "") %>% rbind(tab, .)
+    tab <- rowify_count("  Bugs fixed per day", bug_data, "time_first_fix", "fixes_per_day") %>% rbind(tab, .)
+    tab <- rowify_count("  Bugs negatively reviewed per day", bug_data, "time_first_review_minus", "review_minus_per_day") %>% rbind(tab, .)
+    tab <- rowify_count("  Bugs backed out per day", bug_data, "time_first_backout", "backouts_per_day") %>% rbind(tab, .)
+    tab <- rowify_count("  Bugs reopened per day", bug_data, "time_first_reopen", "reopens_per_day") %>% rbind(tab, .)
 
   tab <- c("EFFICACY", "", "", "") %>% rbind(tab, .)
     tab <- rowify_binary("  Review- rate", bug_data, "time_first_review_ask", "has_review_minus") %>% rbind(tab, .)
