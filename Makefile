@@ -18,10 +18,10 @@ data/firefox-backouts.rds: data/firefox-commits.rds script/detect-backout-commit
 report/detect-backout-commits.html: data/firefox-commits.rds script/detect-backout-commits.R
 	./run-script.rb script/detect-backout-commits.R
 
-data/firefox-fixes.rds: data/firefox-commits.rds data/firefox-bugs.rds script/detect-fix-commits.R
+data/firefox-fixes.rds: data/firefox-commits.rds script/detect-fix-commits.R
 	./run-script.rb script/detect-fix-commits.R
 
-report/detect-fix-commits.html: data/firefox-commits.rds data/firefox-bugs.rds script/detect-fix-commits.R
+report/detect-fix-commits.html: data/firefox-commits.rds script/detect-fix-commits.R
 	./run-script.rb script/detect-fix-commits.R
 
 data/firefox-reviews.rds: data/firefox-events.rds script/detect-reviews.R

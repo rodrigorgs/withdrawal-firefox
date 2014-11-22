@@ -2,6 +2,7 @@ rm(list=ls())
 library(dplyr)
 library(Hmisc)
 library(zoo)
+source('../lib/na.R')
 
 bug_data <- readRDS("../data/firefox-bug-data.rds")
 
@@ -13,13 +14,17 @@ bug_data <- readRDS("../data/firefox-bug-data.rds")
 #     bug_data %>% group_by(some_criteria...) %>% mutate(num_days = ...)
 #
 # Please note that we require a column called `num_days` with the number of
-# days within each group.
+# days within each group, or a column called `month` in the format "2014-12".
 #
 compute_summary <- function(groupped_bug_data) {
   ret <- groupped_bug_data %>%
     summarise(
       fixes = n(),
-      num_days = max(num_days),
+      num_days = ifelse(
+        exists("num_days", groupped_bug_data),
+        max(num_days),
+        sum(monthDays(unique(as.Date(paste0(month, "-01")))))
+        ),
       fixes_per_day = fixes / num_days,
       #
       reopen_count = sum(has_reopen),
@@ -75,6 +80,99 @@ compute_summary <- function(groupped_bug_data) {
 
   invisible(ret)
 }
+
+between <- function(x, min, max) {
+  x >= min & x <= max
+}
+group_by_release_type <- function(df) {
+  ret <- df %>%
+    mutate(
+      month = strftime(time, "%Y-%m"),
+      release_type = ifelse(
+        month %>% between('2009-02', '2011-02'), 'planned',
+        ifelse(month %>% between('2011-07', '2013-07'), 'rapid',
+        NA))) %>%
+    group_by(release_type) %>%
+    filter(!is.na(release_type))
+  invisible(ret)
+}
+
+# {
+#   data_release_first_fix <- bug_data %>% mutate(time = time_first_fix) %>%
+#     group_by_release_type() %>% compute_summary()
+#   data_release_first_buildok <- bug_data %>% mutate(time = time_first_buildok) %>%
+#     group_by_release_type() %>% compute_summary()
+#   data_release_first_reopen <- bug_data %>% mutate(time = time_first_reopen) %>%
+#     group_by_release_type() %>% compute_summary()
+#   data_release_first_backout <- bug_data %>% mutate(time = time_first_backout) %>%
+#     group_by_release_type() %>% compute_summary()
+#   data_release_first_review_ask <- bug_data %>% mutate(time = time_first_review_ask) %>%
+#     group_by_release_type() %>% compute_summary()
+#   data_release_create <- bug_data %>% mutate(time = time_create) %>%
+#     group_by_release_type() %>% compute_summary()
+# }
+
+
+stars_for_pvalue <- function(pvalue) {
+  stars <- ""
+  if (pvalue < 0.001) {
+    stars <- "***"
+  } else if (pvalue < 0.01) {
+    stars <- "**"
+  } else if (pvalue < 0.05) {
+    stars <- "*"
+  }
+  stars
+}
+rowify_binary <- function(title, x, reference_time_column, column) {
+  z <- x %>% mutate_("time" = reference_time_column) %>% group_by_release_type()
+  planned <- z[z$release_type == 'planned',][[column]]
+  rapid <- z[z$release_type == 'rapid',][[column]]
+  pvalue <- fisher.test(z$release_type, z[[column]])$p.value
+
+  strvalues <- c(
+    title,
+    sprintf("%.2f%%", mean(planned, na.rm=T) * 100),
+    sprintf("%.2f%%", mean(rapid, na.rm=T) * 100),
+    stars_for_pvalue(pvalue))
+  strvalues
+}
+rowify_continuous <- function(title, x, reference_time_column, column) {
+  z <- x %>% mutate_("time" = reference_time_column) %>% group_by_release_type()
+  planned <- z[z$release_type == 'planned',][[column]]
+  rapid <- z[z$release_type == 'rapid',][[column]]
+  pvalue <- wilcox.test(planned, rapid)$p.value
+
+  strvalues <- c(
+    title,
+    sprintf("%.2f", median(planned, na.rm=T)),
+    sprintf("%.2f", median(rapid, na.rm=T)),
+    stars_for_pvalue(pvalue)
+    )
+  strvalues
+}
+
+rowify_binary("Reopening rate", bug_data, "time_first_buildok", "has_reopen")
+rowify_binary("Backout rate", bug_data, "time_first_fix", "has_backout")
+rowify_binary("Early backout rate", bug_data, "time_first_fix", "has_early_backout")
+rowify_binary("Late backout rate", bug_data, "time_first_fix", "has_late_backout")
+rowify_binary("Review- rate", bug_data, "time_first_review_ask", "has_review_minus")
+
+# time-to-fix
+rowify_continuous("Time-to-fix (hours)", bug_data, 'time_create', 'hours_to_fix')
+rowify_continuous("Time-to-buildok (hours)", bug_data, 'time_create', 'hours_to_buildok')
+# time-to-refix
+rowify_continuous("Time-to-refix (hours)", bug_data, 'time_first_backout', 'hours_to_refix')
+rowify_continuous("Time-to-rebuildok (hours)", bug_data, 'time_first_reopen', 'hours_to_rebuildok')
+# time-to-badfix#
+### TODO: compute hours_to_badfix in aggregate)
+# rowify_continuous("Time-to-badfix (hours)", bug_data, 'time_create', 'hours_to_badfix')
+# rowify_continuous("Time-to-badbuildok (hours)", bug_data, 'time_create', 'hours_to_badbuildok')
+
+# time-to-reopen
+rowify_continuous("Time-to-backout (hours)", bug_data, 'time_first_fix', 'hours_to_backout')
+rowify_continuous("Time-to-reopen (hours)", bug_data, 'time_first_buildok', 'hours_to_reopen')
+rowify_continuous("Time-to-review- (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_minus')
 
 {
   min_date <- '2009-01-01'
@@ -243,7 +341,7 @@ legend("topleft", c("early", "late"), lwd=1, col=c(1,2))
 #' ---------------------------------------------------------------------------
 #'
 
-#' # Facet 1: Efficiency (time)
+#' # Facet 3: Efficiency (time)
 
 #' ## time-to-fix and variants
 
