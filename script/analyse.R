@@ -97,22 +97,6 @@ group_by_release_type <- function(df) {
   invisible(ret)
 }
 
-# {
-#   data_release_first_fix <- bug_data %>% mutate(time = time_first_fix) %>%
-#     group_by_release_type() %>% compute_summary()
-#   data_release_first_buildok <- bug_data %>% mutate(time = time_first_buildok) %>%
-#     group_by_release_type() %>% compute_summary()
-#   data_release_first_reopen <- bug_data %>% mutate(time = time_first_reopen) %>%
-#     group_by_release_type() %>% compute_summary()
-#   data_release_first_backout <- bug_data %>% mutate(time = time_first_backout) %>%
-#     group_by_release_type() %>% compute_summary()
-#   data_release_first_review_ask <- bug_data %>% mutate(time = time_first_review_ask) %>%
-#     group_by_release_type() %>% compute_summary()
-#   data_release_create <- bug_data %>% mutate(time = time_create) %>%
-#     group_by_release_type() %>% compute_summary()
-# }
-
-
 stars_for_pvalue <- function(pvalue) {
   stars <- ""
   if (pvalue < 0.001) {
@@ -132,8 +116,8 @@ rowify_binary <- function(title, x, reference_time_column, column) {
 
   strvalues <- c(
     title,
-    sprintf("%.2f%%", mean(planned, na.rm=T) * 100),
-    sprintf("%.2f%%", mean(rapid, na.rm=T) * 100),
+    sprintf("%3.2f%%", mean(planned, na.rm=T) * 100),
+    sprintf("%3.2f%%", mean(rapid, na.rm=T) * 100),
     stars_for_pvalue(pvalue))
   strvalues
 }
@@ -145,38 +129,72 @@ rowify_continuous <- function(title, x, reference_time_column, column) {
 
   strvalues <- c(
     title,
-    sprintf("%.2f", median(planned, na.rm=T)),
-    sprintf("%.2f", median(rapid, na.rm=T)),
+    sprintf("%3.2f", median(planned, na.rm=T)),
+    sprintf("%3.2f", median(rapid, na.rm=T)),
     stars_for_pvalue(pvalue)
     )
   strvalues
 }
 
-rowify_binary("Reopening rate", bug_data, "time_first_buildok", "has_reopen")
-rowify_binary("Backout rate", bug_data, "time_first_fix", "has_backout")
-rowify_binary("Early backout rate", bug_data, "time_first_fix", "has_early_backout")
-rowify_binary("Late backout rate", bug_data, "time_first_fix", "has_late_backout")
-rowify_binary("Review- rate", bug_data, "time_first_review_ask", "has_review_minus")
+# PRODUCTIVITY
+#   fixes per day
+#   reopens per day
+#   backouts per day (TODO: create plots for early and late backout per day)
+#   reviews- per day (TODO: create this plot)
 
-# time-to-fix
-rowify_continuous("Time-to-fix (hours)", bug_data, 'time_create', 'hours_to_fix')
-rowify_continuous("Time-to-buildok (hours)", bug_data, 'time_create', 'hours_to_buildok')
-# time-to-refix
-rowify_continuous("Time-to-refix (hours)", bug_data, 'time_first_backout', 'hours_to_refix')
-rowify_continuous("Time-to-rebuildok (hours)", bug_data, 'time_first_reopen', 'hours_to_rebuildok')
-# time-to-badfix#
-### TODO: compute hours_to_badfix in aggregate)
-# rowify_continuous("Time-to-badfix (hours)", bug_data, 'time_create', 'hours_to_badfix')
-# rowify_continuous("Time-to-badbuildok (hours)", bug_data, 'time_create', 'hours_to_badbuildok')
+{
+  headers <- c("", "traditional", "rapid", "significance")
+  tab <- headers
 
-# time-to-reopen
-rowify_continuous("Time-to-backout (hours)", bug_data, 'time_first_fix', 'hours_to_backout')
-rowify_continuous("Time-to-reopen (hours)", bug_data, 'time_first_buildok', 'hours_to_reopen')
-rowify_continuous("Time-to-review- (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_minus')
+  tab <- c("EFFICACY", "", "", "") %>% rbind(tab, .)
+    tab <- rowify_binary("  Review- rate", bug_data, "time_first_review_ask", "has_review_minus") %>% rbind(tab, .)
+    tab <- rowify_binary("  Backout rate", bug_data, "time_first_fix", "has_backout") %>% rbind(tab, .)
+    tab <- rowify_binary("    Early backout rate", bug_data, "time_first_fix", "has_early_backout") %>% rbind(tab, .)
+    tab <- rowify_binary("    Late backout rate", bug_data, "time_first_fix", "has_late_backout") %>% rbind(tab, .)
+    tab <- rowify_binary("  Reopening rate", bug_data, "time_first_buildok", "has_reopen") %>% rbind(tab, .)
+
+  tab <- c("EFFICIENCY", "", "", "") %>% rbind(tab, .)
+  # time-to-fix
+    tab <- rowify_continuous("  Time-to-ask review (hours)", bug_data, 'time_create', 'hours_to_review_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-fix (hours)", bug_data, 'time_create', 'hours_to_fix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-buildok (hours)", bug_data, 'time_create', 'hours_to_buildok') %>% rbind(tab, .)
+    # TODO: diff between time-to-fix and time-to-buildok
+  tab <- c("  -", "", "", "") %>% rbind(tab, .)
+  # time-to-badfix
+    tab <- rowify_continuous("  Time-to-bad review ask (hours)", bug_data, 'time_create', 'hours_to_badreview_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-badfix (hours)", bug_data, 'time_create', 'hours_to_badfix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-badbuildok (hours)", bug_data, 'time_create', 'hours_to_badbuildok') %>% rbind(tab, .)
+  tab <- c("  ---", "", "", "") %>% rbind(tab, .)
+  # time-to-refix
+    tab <- rowify_continuous("  Time-to-rereview ask (hours)", bug_data, 'time_first_review_minus', 'hours_to_rereview_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-refix (hours)", bug_data, 'time_first_backout', 'hours_to_refix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-rebuildok (hours)", bug_data, 'time_first_reopen', 'hours_to_rebuildok') %>% rbind(tab, .)
+  tab <- c("  ---", "", "", "") %>% rbind(tab, .)
+  # time-to-reopen
+    
+    # FIXME!!!!!!
+    tab <- rowify_continuous("  Time-to-review- (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_minus') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-review+ (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_plus') %>% rbind(tab, .)
+
+    tab <- rowify_continuous("  Time-to-backout (hours)", bug_data, 'time_first_fix', 'hours_to_backout') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-reopen (hours)", bug_data, 'time_first_buildok', 'hours_to_reopen') %>% rbind(tab, .)
+
+  rownames(tab) <- NULL
+  tab
+}
 
 {
   min_date <- '2009-01-01'
   max_date <- '2013-07-01'
+
+# group_by_month <- function(df) {
+#   ret <- df %>%
+#     mutate(month = strftime(time, "%Y-%m")) %>%
+#     filter(month %>% between('2009-02', '2013-07')) %>%
+#     group_by(month)
+#   invisible(ret)
+# }
+# TODO: adapta code below to use function group_by_month
 
   data_month_first_fix <- bug_data %>%
     filter(time_first_fix >= min_date & time_first_fix < max_date) %>%

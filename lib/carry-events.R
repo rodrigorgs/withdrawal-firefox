@@ -32,16 +32,53 @@ if (!exists("carryForward", mode="function")) {
   ')
 }
 
+if (!exists("carryForwardDate", mode="function")) {
+  cppFunction('
+  DateVector carryForwardDate(DateVector vec, LogicalVector which, LogicalVector restart) {
+    int n = vec.size();
+    DateVector res(n);
+    
+    Date last = NA_REAL;
+    
+    for (int i = 0; i < n; i++) {
+      Date current;
+      
+      if (which[i]) {
+        current = vec[i];
+      }
+      else if (restart[i]) {
+        current = NA_REAL;
+      }
+      else {
+        current = last;
+      }
+  
+      res[i] = current;
+      last = current;
+    }
+    
+    return res;
+  }
+  ')
+}
+
 carry.events <- function(events, valid, column="currentvalue") {
   env <- as.environment(events)
   parent.env(env) <- parent.frame()
   
   vec <- column
   if (mode(column) == "character" && length(column) == 1)
-    vec <- events[, column]
+    vec <- events[[column]]
   class.vec <- class(vec)
   
-  x <- carryForward(vec, eval(substitute(valid), env, parent.frame()), na.as.true(prevv(events$bug) != events$bug))
+  x <- NULL
+  if (is.character(vec)) {
+    x <- carryForward(vec, eval(substitute(valid), env, parent.frame()), na.as.true(prevv(events$bug) != events$bug))
+  } else if ("POSIXct" %in% class(vec)) {
+    x <- carryForwardDate(vec, eval(substitute(valid), env, parent.frame()), na.as.true(prevv(events$bug) != events$bug))
+  } else {
+    stop(paste("carry.events: Vector has non supported class(es): ", class(vec)))
+  }
   class(x) <- class(vec)
   x
 }
