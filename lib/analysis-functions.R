@@ -1,3 +1,5 @@
+library(Hmisc)
+library(zoo)
 source('na.R', chdir=T)
 
 #
@@ -45,6 +47,8 @@ compute_summary <- function(groupped_bug_data) {
       median_hours_to_refix = median(hours_to_refix, na.rm=T),
       median_p_hours_to_refix = median(hours_to_refix / hours_to_fix, na.rm=T),
       median_hours_to_backout = median(hours_to_backout, na.rm=T),
+      median_hours_to_early_backout = median(hours_to_early_backout, na.rm=T),
+      median_hours_to_late_backout = median(hours_to_late_backout, na.rm=T),
       #
       median_hours_to_reopen = median(hours_to_reopen, na.rm=T),
       median_hours_to_buildok = median(hours_to_buildok, na.rm=T),
@@ -62,6 +66,7 @@ compute_summary <- function(groupped_bug_data) {
       median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,      
       #
       # review
+      median_hours_to_review_ask = median(hours_to_review_ask, na.rm=T),
       median_hours_to_review_plus = median(hours_to_review_plus, na.rm=T),
       median_hours_to_review_minus = median(hours_to_review_minus, na.rm=T),
       #
@@ -136,17 +141,17 @@ rowify_continuous <- function(title, x, reference_time_column, column) {
 }
 rowify_count <- function(title, x, reference_time_column, column) {
   z <- x %>% mutate_("time" = reference_time_column) %>% group_by_release_type() %>% compute_summary()
-  planned <- z[z$release_type == 'planned',][[column]]
-  rapid <- z[z$release_type == 'rapid',][[column]]
-  # pvalue <- wilcox.test(planned, rapid)$p.value
+  planned <- z[z$release_type == 'planned',]
+  rapid <- z[z$release_type == 'rapid',]
+  overall <- (planned[[column]] * planned$num_days + rapid[[column]] * rapid$num_days) / (planned$num_days + rapid$num_days)
 
   strvalues <- c(
     title,
     "",
+    sprintf("%3.2f", overall),
     "",
-    "",
-    sprintf("%3.2f", planned),
-    sprintf("%3.2f", rapid),
+    sprintf("%3.2f", planned[[column]]),
+    sprintf("%3.2f", rapid[[column]]),
     "(N/A)")
   strvalues
 }
@@ -157,6 +162,9 @@ myplot <- function(data, y, x, ylim=NULL, ...) {
   }
 
   plot(data[[x]], data[[y]], type='l', ylim=ylim, xlab=x, ylab=y, ...)
+
+  abline(v=as.yearmon('2011-03-22'), lty=2) # start development of version 5
+  abline(v=as.yearmon('2011-06-08'), lty=2) # start of mozilla-inbound
 
   lo <- loess(data[[y]] ~ seq(data[[x]]))
   lines(y=predict(lo), x=data[[x]], lwd=0.5, lty=2, ...)
