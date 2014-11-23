@@ -167,7 +167,7 @@ rowify_count <- function(title, x, reference_time_column, column) {
     tab <- rowify_count("  Bugs reopened per day", bug_data, "time_first_reopen", "reopens_per_day") %>% rbind(tab, .)
 
   tab <- c("EFFICACY", "", "", "") %>% rbind(tab, .)
-    tab <- rowify_binary("  Review- rate", bug_data, "time_first_review_ask", "has_review_minus") %>% rbind(tab, .)
+    tab <- rowify_binary("  Negative review rate", bug_data, "time_first_review_ask", "has_review_minus") %>% rbind(tab, .)
     tab <- rowify_binary("  Backout rate", bug_data, "time_first_fix", "has_backout") %>% rbind(tab, .)
     tab <- rowify_binary("    Early backout rate", bug_data, "time_first_fix", "has_early_backout") %>% rbind(tab, .)
     tab <- rowify_binary("    Late backout rate", bug_data, "time_first_fix", "has_late_backout") %>% rbind(tab, .)
@@ -191,8 +191,6 @@ rowify_count <- function(title, x, reference_time_column, column) {
     tab <- rowify_continuous("  Time-to-rebuildok (hours)", bug_data, 'time_first_reopen', 'hours_to_rebuildok') %>% rbind(tab, .)
   tab <- c("  ---", "", "", "") %>% rbind(tab, .)
   # time-to-reopen
-    
-    # FIXME!!!!!!
     tab <- rowify_continuous("  Time-to-review- (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_minus') %>% rbind(tab, .)
     tab <- rowify_continuous("  Time-to-review+ (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_plus') %>% rbind(tab, .)
 
@@ -201,6 +199,37 @@ rowify_count <- function(title, x, reference_time_column, column) {
 
   rownames(tab) <- NULL
   tab
+}
+
+# Sum time-to-fix
+{
+  badfix <- sum(bug_data$hours_to_fix * bug_data$has_backout)
+  goodfix <- sum(bug_data$hours_to_fix * !bug_data$has_backout)
+  mean(bug_data$has_backout, na.rm=T)
+  badfix / (badfix + goodfix)
+
+  # How much time is spent writing inappropriate fixes
+  badreview_ask <- sum(bug_data$hours_to_review_ask * bug_data$has_review_minus, na.rm=T)
+  goodreview_ask <- sum(bug_data$hours_to_review_ask * !bug_data$has_review_minus, na.rm=T)
+  mean(bug_data$has_review_minus, na.rm=T)
+  badreview_ask / (badreview_ask + goodreview_ask)
+
+  # is second fix time positively correlated to time-to-withdraw?
+  df <- subset(bug_data, !is.na(hours_to_refix))
+  cor.test(df$hours_to_refix, df$hours_to_backout)
+  cor.test(df$hours_to_refix, df$hours_to_fix)
+  # (same for second attached patch)
+  df <- subset(bug_data, !is.na(hours_to_rereview_ask) & !is.na(hours_to_review_minus))
+  cor.test(df$hours_to_rereview_ask, df$hours_to_review_minus)
+  cor.test(df$hours_to_rereview_ask, df$hours_to_review_ask)
+
+  # writing second fix takes much less time than writing the first one
+  median(bug_data$hours_to_refix / bug_data$hours_to_fix, na.rm=T)
+  boxplot(1+bug_data$hours_to_fix, 1+bug_data$hours_to_refix, log="y", names=c("fix", "refix"))
+  #
+  median(bug_data$hours_to_rereview_ask / bug_data$hours_to_review_ask, na.rm=T)
+  #
+  median(bug_data$hours_to_rebuildok / bug_data$hours_to_buildok, na.rm=T)
 }
 
 {
