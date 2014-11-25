@@ -67,7 +67,7 @@ attr(complete$time_prev_review_status, "tzone") <- "UTC"
 ###
 
 event_labels <- complete %>% 
-  select(event, bug, time, 
+  select(event, bug, time, user,
     label, 
     prev_bug_status, time_prev_bug_status, 
     prev_commit_status, time_prev_commit_status, 

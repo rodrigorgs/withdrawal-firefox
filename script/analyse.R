@@ -101,6 +101,24 @@ source('../lib/compute-month-groups.R')
 
 myplot(data_month_first_fix, "fixes_per_day", "month")
 
+#' ## compare with number of active developers
+
+a <- data_month_first_fix
+a$month <- strftime(a$month, "%Y-%m")
+# a$month
+developers_month <- readRDS("../data/firefox-developers-month.rds")
+x <- a %>% inner_join(developers_month, by="month")
+x$month <- as.yearmon(x$month)
+x$nfixerfactor <- x$n_fixers * 0.25
+# myplot(x, "n_fixers", "month")
+# mylines(data_month_first_fix, "fixes_per_day", "month", col=2)
+myplot(data_month_first_fix, "fixes_per_day", "month")
+mylines(x, "nfixerfactor", "month", col=2)
+
+x$ratio <- x$fixes_per_day / x$n_fixers
+myplot(x, "ratio", "month")
+cor.test(x$fixes_per_day, x$n_fixers, method='spearman')
+
 #' The number of fixes has been increasing, from about 15/day to about 40/day.
 #' This trend is highly correlated with the increase in the number of programmers.
 
