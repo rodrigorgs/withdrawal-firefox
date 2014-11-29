@@ -12,9 +12,9 @@ reviews <- readRDS("../data/firefox-reviews.rds")
 
 data <- event_data %>% left_join(reviews, by="event")
 data$label <- ""
-
+head(data)
 data$label[data$field == "resolution" & data$currentvalue == "FIXED"] <- "buildok"
-data$label[data$field == "bug_status" & data$currentvalue == "REOPENED"] <- "reopen"
+data$label[data$resolution == 'FIXED' & data$field == "bug_status" & data$currentvalue == "REOPENED"] <- "reopen"
 data$label[data$field == "creation"] <- "create"
 
 data$label[data$field == "backout"] <- "backout"

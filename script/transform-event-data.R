@@ -1,5 +1,6 @@
 rm(list=ls())
 library(dplyr)
+source("../lib/carry-events.R", chdir=T)
 
 bugs <- readRDS("../data/firefox-bugs.rds")
 events <- readRDS("../data/firefox-events.rds")
@@ -7,20 +8,22 @@ commit_data <- readRDS("../data/firefox-commit-data.rds")
 
 ###
 
+events$resolution <- carry.events(events, field == "resolution")
+
 # Mix events, bugs, and commits
 
 event_data__commitlog <- commit_data %>%
   filter(bug %in% events$bug) %>%
-  mutate(event = NA, source = "commitlog", field = type, previousvalue = NA, currentvalue = message) %>%
-	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
+  mutate(event = NA, source = "commitlog", field = type, previousvalue = NA, currentvalue = message, resolution = NA) %>%
+	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue, resolution)
 
 event_data__bugreports <- events %>%
 	mutate(source = "bugreports", commit = NA) %>%
-	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
+	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue, resolution)
 
 event_data__bugcreation <- bugs %>%
-	mutate(event = NA, source = "bugreports", commit = NA, user = reporter, time = initial.time, field = "creation", previousvalue = NA, currentvalue = description) %>%
-	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue)
+	mutate(event = NA, source = "bugreports", commit = NA, user = reporter, time = initial.time, field = "creation", previousvalue = NA, currentvalue = description, resolution = NA) %>%
+	select(event, source, bug, commit, user, time, field, previousvalue, currentvalue, resolution)
 
 
 

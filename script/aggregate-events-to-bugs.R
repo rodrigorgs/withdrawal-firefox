@@ -59,7 +59,7 @@ col <- "time_review_ask_before_review_minus"; events[!(events$label == "review-"
 #
 col <- "time_reopen"; events[!(events$label == "reopen" & events$prev_bug_status == "buildok"), col] <- NA
 col <- "time_backout"; events[!(events$label == "backout"), col] <- NA
-col <- "time_early_backout"; events[!(events$label == "backout" & events$prev_bug_status == "create"), col] <- NA
+col <- "time_early_backout"; events[!(events$label == "backout" & events$prev_bug_status != "buildok"), col] <- NA
 col <- "time_late_backout"; events[!(events$label == "backout" & events$prev_bug_status == "buildok"), col] <- NA
 col <- "time_review_plus"; events[!(events$label == "review+" & events$prev_review_status == "review?"), col] <- NA
 col <- "time_review_minus"; events[!(events$label == "review-" & events$prev_review_status == "review?"), col] <- NA
