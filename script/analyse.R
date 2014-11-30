@@ -31,29 +31,29 @@ bug_data <- readRDS("../data/firefox-bug-data.rds")
 
   tab <- c("EFFICIENCY", "", "", "", "", "", "") %>% rbind(tab, .)
   # time-to-fix
-    tab <- rowify_continuous("  Time-to-ask review (hours)", bug_data, 'time_create', 'hours_to_review_ask') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-fix (hours)", bug_data, 'time_create', 'hours_to_fix') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-buildok (hours)", bug_data, 'time_create', 'hours_to_buildok') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-ask review (days)", bug_data, 'time_create', 'days_to_review_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-fix (days)", bug_data, 'time_create', 'days_to_fix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-buildok (days)", bug_data, 'time_create', 'days_to_buildok') %>% rbind(tab, .)
     # TODO: diff between time-to-fix and time-to-buildok
   tab <- c("  -", "", "", "", "", "", "") %>% rbind(tab, .)
   # time-to-badfix
-    tab <- rowify_continuous("  Time-to-bad review ask (hours)", bug_data, 'time_create', 'hours_to_badreview_ask') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-badfix (hours)", bug_data, 'time_create', 'hours_to_badfix') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-badbuildok (hours)", bug_data, 'time_create', 'hours_to_badbuildok') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-bad review ask (days)", bug_data, 'time_create', 'days_to_badreview_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-badfix (days)", bug_data, 'time_create', 'days_to_badfix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-badbuildok (days)", bug_data, 'time_create', 'days_to_badbuildok') %>% rbind(tab, .)
   tab <- c("  ---", "", "", "", "", "", "") %>% rbind(tab, .)
   # time-to-refix
-    tab <- rowify_continuous("  Time-to-rereview ask (hours)", bug_data, 'time_first_review_minus', 'hours_to_rereview_ask') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-refix (hours)", bug_data, 'time_first_backout', 'hours_to_refix') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-rebuildok (hours)", bug_data, 'time_first_reopen', 'hours_to_rebuildok') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-rereview ask (days)", bug_data, 'time_first_review_minus', 'days_to_rereview_ask') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-refix (days)", bug_data, 'time_first_backout', 'days_to_refix') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-rebuildok (days)", bug_data, 'time_first_reopen', 'days_to_rebuildok') %>% rbind(tab, .)
   tab <- c("  ---", "", "", "", "", "", "") %>% rbind(tab, .)
   # time-to-reopen
-    tab <- rowify_continuous("  Time-to-review- (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_minus') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-review+ (hours)", bug_data, 'time_first_review_ask', 'hours_to_review_plus') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-review- (days)", bug_data, 'time_first_review_ask', 'days_to_review_minus') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-review+ (days)", bug_data, 'time_first_review_ask', 'days_to_review_plus') %>% rbind(tab, .)
 
-    tab <- rowify_continuous("  Time-to-backout (hours)", bug_data, 'time_first_fix', 'hours_to_backout') %>% rbind(tab, .)
-    tab <- rowify_continuous("    Time-to-early backout (hours)", bug_data, 'time_first_fix', 'hours_to_early_backout') %>% rbind(tab, .)
-    tab <- rowify_continuous("    Time-to-late backout (hours)", bug_data, 'time_first_fix', 'hours_to_late_backout') %>% rbind(tab, .)
-    tab <- rowify_continuous("  Time-to-reopen (hours)", bug_data, 'time_first_buildok', 'hours_to_reopen') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-backout (days)", bug_data, 'time_first_fix', 'days_to_backout') %>% rbind(tab, .)
+    tab <- rowify_continuous("    Time-to-early backout (days)", bug_data, 'time_first_fix', 'days_to_early_backout') %>% rbind(tab, .)
+    tab <- rowify_continuous("    Time-to-late backout (days)", bug_data, 'time_first_fix', 'days_to_late_backout') %>% rbind(tab, .)
+    tab <- rowify_continuous("  Time-to-reopen (days)", bug_data, 'time_first_buildok', 'days_to_reopen') %>% rbind(tab, .)
 
   rownames(tab) <- NULL
   tab
@@ -61,33 +61,33 @@ bug_data <- readRDS("../data/firefox-bug-data.rds")
 
 # Sum time-to-fix
 {
-  badfix <- sum(bug_data$hours_to_fix * bug_data$has_backout)
-  goodfix <- sum(bug_data$hours_to_fix * !bug_data$has_backout)
+  badfix <- sum(bug_data$days_to_fix * bug_data$has_backout)
+  goodfix <- sum(bug_data$days_to_fix * !bug_data$has_backout)
   mean(bug_data$has_backout, na.rm=T)
   badfix / (badfix + goodfix)
 
   # How much time is spent writing inappropriate fixes
-  badreview_ask <- sum(bug_data$hours_to_review_ask * bug_data$has_review_minus, na.rm=T)
-  goodreview_ask <- sum(bug_data$hours_to_review_ask * !bug_data$has_review_minus, na.rm=T)
+  badreview_ask <- sum(bug_data$days_to_review_ask * bug_data$has_review_minus, na.rm=T)
+  goodreview_ask <- sum(bug_data$days_to_review_ask * !bug_data$has_review_minus, na.rm=T)
   mean(bug_data$has_review_minus, na.rm=T)
   badreview_ask / (badreview_ask + goodreview_ask)
 
   # is second fix time positively correlated to time-to-withdraw?
-  df <- subset(bug_data, !is.na(hours_to_refix))
-  cor.test(df$hours_to_refix, df$hours_to_backout)
-  cor.test(df$hours_to_refix, df$hours_to_fix)
+  df <- subset(bug_data, !is.na(days_to_refix))
+  cor.test(df$days_to_refix, df$days_to_backout)
+  cor.test(df$days_to_refix, df$days_to_fix)
   # (same for second attached patch)
-  df <- subset(bug_data, !is.na(hours_to_rereview_ask) & !is.na(hours_to_review_minus))
-  cor.test(df$hours_to_rereview_ask, df$hours_to_review_minus)
-  cor.test(df$hours_to_rereview_ask, df$hours_to_review_ask)
+  df <- subset(bug_data, !is.na(days_to_rereview_ask) & !is.na(days_to_review_minus))
+  cor.test(df$days_to_rereview_ask, df$days_to_review_minus)
+  cor.test(df$days_to_rereview_ask, df$days_to_review_ask)
 
   # writing second fix takes much less time than writing the first one
-  median(bug_data$hours_to_refix / bug_data$hours_to_fix, na.rm=T)
-  boxplot(1+bug_data$hours_to_fix, 1+bug_data$hours_to_refix, log="y", names=c("fix", "refix"))
+  median(bug_data$days_to_refix / bug_data$days_to_fix, na.rm=T)
+  boxplot(1+bug_data$days_to_fix, 1+bug_data$days_to_refix, log="y", names=c("fix", "refix"))
   #
-  median(bug_data$hours_to_rereview_ask / bug_data$hours_to_review_ask, na.rm=T)
+  median(bug_data$days_to_rereview_ask / bug_data$days_to_review_ask, na.rm=T)
   #
-  median(bug_data$hours_to_rebuildok / bug_data$hours_to_buildok, na.rm=T)
+  median(bug_data$days_to_rebuildok / bug_data$days_to_buildok, na.rm=T)
 }
 
 source('../lib/compute-month-groups.R')
@@ -212,13 +212,13 @@ legend("topleft", c("early", "late"), lwd=1, col=c(1,2))
 
 #' ## time-to-fix and variants
 
-myplot(data_month_create, "median_hours_to_buildok", "month")
-mylines(data_month_first_reopen, "median_hours_to_rebuildok", "month", col=2)
-myplot(data_month_create, "median_hours_to_fix", "month")
-mylines(data_month_first_backout, "median_hours_to_refix", "month", col=2)
+myplot(data_month_create, "median_days_to_buildok", "month")
+mylines(data_month_first_reopen, "median_days_to_rebuildok", "month", col=2)
+myplot(data_month_create, "median_days_to_fix", "month")
+mylines(data_month_first_backout, "median_days_to_refix", "month", col=2)
 
-myplot(data_month_first_backout, "median_p_hours_to_refix", "month")
-myplot(data_month_first_reopen, "median_p_hours_to_rebuildok", "month")
+myplot(data_month_first_backout, "median_p_days_to_refix", "month")
+myplot(data_month_first_reopen, "median_p_days_to_rebuildok", "month")
 
 #' The time to create a fix has reduced. TODO: why? so what?
 #'
@@ -234,20 +234,20 @@ myplot(data_month_first_reopen, "median_p_hours_to_rebuildok", "month")
 
 #' ## time-to-bad-fix
 
-myplot(data_month_create, "median_hours_to_badfix", "month")
-mylines(data_month_create, "median_hours_to_fix", "month", col=2)
+myplot(data_month_create, "median_days_to_badfix", "month")
+mylines(data_month_create, "median_days_to_fix", "month", col=2)
 legend("topleft", c("bad fix", "fix"), lwd=1, col=c(1,2))
-myplot(data_month_create, "median_p_hours_to_badfix", "month")
+myplot(data_month_create, "median_p_days_to_badfix", "month")
 
 #' A bad fix takes longer 2x to 3x longer.
 #' Bad fix-time is reducing.'
 
 #' ## time-to-bad-buildok'
 
-myplot(data_month_create, "median_hours_to_badbuildok", "month")
-mylines(data_month_create, "median_hours_to_buildok", "month", col=2)
+myplot(data_month_create, "median_days_to_badbuildok", "month")
+mylines(data_month_create, "median_days_to_buildok", "month", col=2)
 legend("topleft", c("bad buildok", "buildok"), lwd=1, col=c(1,2))
-myplot(data_month_create, "median_p_hours_to_badbuildok", "month")
+myplot(data_month_create, "median_p_days_to_badbuildok", "month")
 
 
 #'
@@ -256,10 +256,10 @@ myplot(data_month_create, "median_p_hours_to_badbuildok", "month")
 
 #' ## time-to-reopen and time-to-backout
 
-myplot(data_month_first_buildok, "median_hours_to_reopen", "month")
-myplot(data_month_first_fix, "median_hours_to_backout", "month")
+myplot(data_month_first_buildok, "median_days_to_reopen", "month")
+myplot(data_month_first_fix, "median_days_to_backout", "month")
 
-#' A typical bug takes about 5 hours to be backed out (if it is ever backed out)
+#' A typical bug takes about 5 days to be backed out (if it is ever backed out)
 #' 
 #' There was a spike in time-to-backout in late-2010/early-2011.
 
@@ -276,8 +276,8 @@ myplot(data_month_first_review_ask, "review_minus_rate", "month")
 #' All bug fixes are reviewed. Almost all receive a review+.
 #' Between 10 and 15% ever receive a review-. The number seems to be reducing.
 
-myplot(data_month_first_review_ask, "median_hours_to_review_minus", "month")
-mylines(data_month_first_review_ask, "median_hours_to_review_plus", "month", col=2)
+myplot(data_month_first_review_ask, "median_days_to_review_minus", "month")
+mylines(data_month_first_review_ask, "median_days_to_review_plus", "month", col=2)
 legend("topleft", c("review-", "review+"), lwd=1, col=c(1,2))
 
 #' Negative reviews take longer.
@@ -285,19 +285,19 @@ legend("topleft", c("review-", "review+"), lwd=1, col=c(1,2))
 #' # Correlations
 
 x <- data_month_first_fix %>%
-  select(median_hours_to_buildok, median_hours_to_fix, median_hours_to_reopen, median_hours_to_backout,
-    median_hours_to_rebuildok, median_hours_to_refix,
+  select(median_days_to_buildok, median_days_to_fix, median_days_to_reopen, median_days_to_backout,
+    median_days_to_rebuildok, median_days_to_refix,
     reopen_count, backout_count, early_backout_count, late_backout_count)
 library(PerformanceAnalytics)
 chart.Correlation(x, method='spearman')
 
-a <- subset(bug_data, !is.na(hours_to_refix) & !is.na(hours_to_backout))
-with(a, cor.test(hours_to_refix, hours_to_backout), method='spearman')
-with(a, plot(y=hours_to_refix, x=hours_to_backout))
+a <- subset(bug_data, !is.na(days_to_refix) & !is.na(days_to_backout))
+with(a, cor.test(days_to_refix, days_to_backout), method='spearman')
+with(a, plot(y=days_to_refix, x=days_to_backout))
 #
-a <- subset(bug_data, !is.na(hours_to_rebuildok) & !is.na(hours_to_reopen))
-with(a, cor.test(hours_to_rebuildok, hours_to_reopen), method='spearman')
-with(a, plot(y=hours_to_rebuildok, x=hours_to_reopen))
+a <- subset(bug_data, !is.na(days_to_rebuildok) & !is.na(days_to_reopen))
+with(a, cor.test(days_to_rebuildok, days_to_reopen), method='spearman')
+with(a, plot(y=days_to_rebuildok, x=days_to_reopen))
 
 # Associations
 
@@ -312,7 +312,7 @@ fisher.test(xtabs(~ has_review_minus + has_backout, data=bug_data))
 
 #' There's an association between review- and backout/reopen
 
-# hist(bug_data$hours_to_buildok)
-# hist(bug_data$hours_to_reopen)
-# hist(bug_data$hours_to_fix)
-# hist(bug_data$hours_to_backout)
+# hist(bug_data$days_to_buildok)
+# hist(bug_data$days_to_reopen)
+# hist(bug_data$days_to_fix)
+# hist(bug_data$days_to_backout)

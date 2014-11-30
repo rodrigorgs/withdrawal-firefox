@@ -92,25 +92,25 @@ col <- "time_review_minus"; events[!(events$label == "review-" & events$prev_rev
       num_reopens = sum(label == "reopen"),
       num_buildoks = sum(label == "buildok")) %>%
     mutate(
-      hours_to_fix = as.numeric(time_first_fix - time_create, units='hours'),
-      hours_to_buildok = as.numeric(time_first_buildok - time_create, units='hours'),
-      hours_to_review_ask = as.numeric(time_first_review_ask - time_create, units='hours'),
+      days_to_fix = as.numeric(time_first_fix - time_create, units='days'),
+      days_to_buildok = as.numeric(time_first_buildok - time_create, units='days'),
+      days_to_review_ask = as.numeric(time_first_review_ask - time_create, units='days'),
       #
-      hours_to_refix = as.numeric(time_first_refix - time_first_backout, units='hours'),
-      hours_to_rebuildok = as.numeric(time_first_rebuildok - time_first_reopen, units='hours'),
-      hours_to_rereview_ask = as.numeric(time_first_rereview_ask - time_first_review_minus_before_rereview_ask, units='hours'),
+      days_to_refix = as.numeric(time_first_refix - time_first_backout, units='days'),
+      days_to_rebuildok = as.numeric(time_first_rebuildok - time_first_reopen, units='days'),
+      days_to_rereview_ask = as.numeric(time_first_rereview_ask - time_first_review_minus_before_rereview_ask, units='days'),
       #
-      hours_to_badfix = ifelse(!is.na(time_first_backout), hours_to_fix, NA),
-      hours_to_badbuildok = ifelse(!is.na(time_first_reopen), hours_to_buildok, NA),
-      hours_to_badreview_ask = ifelse(!is.na(time_first_review_minus), hours_to_review_ask, NA),
+      days_to_badfix = ifelse(!is.na(time_first_backout), days_to_fix, NA),
+      days_to_badbuildok = ifelse(!is.na(time_first_reopen), days_to_buildok, NA),
+      days_to_badreview_ask = ifelse(!is.na(time_first_review_minus), days_to_review_ask, NA),
       #
-      hours_to_reopen = as.numeric(time_first_reopen - time_first_buildok, units='hours'),
-      hours_to_backout = as.numeric(time_first_backout - time_first_fix, units='hours'),
-      hours_to_early_backout = as.numeric(time_first_early_backout - time_first_fix, units='hours'),
-      hours_to_late_backout = as.numeric(time_first_late_backout - time_first_fix, units='hours'),
+      days_to_reopen = as.numeric(time_first_reopen - time_first_buildok, units='days'),
+      days_to_backout = as.numeric(time_first_backout - time_first_fix, units='days'),
+      days_to_early_backout = as.numeric(time_first_early_backout - time_first_fix, units='days'),
+      days_to_late_backout = as.numeric(time_first_late_backout - time_first_fix, units='days'),
       #
-      hours_to_review_plus = as.numeric(time_first_review_plus - time_first_review_ask_before_review_plus, units='hours'),
-      hours_to_review_minus = as.numeric(time_first_review_minus - time_first_review_ask_before_review_minus, units='hours'),
+      days_to_review_plus = as.numeric(time_first_review_plus - time_first_review_ask_before_review_plus, units='days'),
+      days_to_review_minus = as.numeric(time_first_review_minus - time_first_review_ask_before_review_minus, units='days'),
       #
       has_reopen = !is.na(time_first_reopen),
       has_fix = !is.na(time_first_fix),
@@ -121,12 +121,12 @@ col <- "time_review_minus"; events[!(events$label == "review-" & events$prev_rev
       has_review_plus = !is.na(time_first_review_plus),
       has_review_minus = !is.na(time_first_review_minus)) %>%
     filter(
-      is.na(hours_to_fix) | hours_to_fix > 0,
-      is.na(hours_to_refix) | hours_to_refix > 0,
-      is.na(hours_to_buildok) | hours_to_buildok > 0,
-      is.na(hours_to_rebuildok) | hours_to_rebuildok > 0,
-      is.na(hours_to_reopen) | hours_to_reopen > 0,
-      is.na(hours_to_backout) | hours_to_backout > 0)
+      is.na(days_to_fix) | days_to_fix > 0,
+      is.na(days_to_refix) | days_to_refix > 0,
+      is.na(days_to_buildok) | days_to_buildok > 0,
+      is.na(days_to_rebuildok) | days_to_rebuildok > 0,
+      is.na(days_to_reopen) | days_to_reopen > 0,
+      is.na(days_to_backout) | days_to_backout > 0)
 }
 
 mean(!is.na(bug_data$time_first_review_minus))

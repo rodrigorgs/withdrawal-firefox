@@ -43,38 +43,38 @@ compute_summary <- function(groupped_bug_data) {
       review_plus_rate = sum(has_review_ask & has_review_plus) / sum(has_review_ask),
       review_ask_rate = mean(has_review_ask),
       #
-      median_hours_to_fix = median(hours_to_fix, na.rm=T),
-      median_hours_to_refix = median(hours_to_refix, na.rm=T),
-      median_p_hours_to_refix = median(hours_to_refix / hours_to_fix, na.rm=T),
-      median_hours_to_backout = median(hours_to_backout, na.rm=T),
-      median_hours_to_early_backout = median(hours_to_early_backout, na.rm=T),
-      median_hours_to_late_backout = median(hours_to_late_backout, na.rm=T),
+      median_days_to_fix = median(days_to_fix, na.rm=T),
+      median_days_to_refix = median(days_to_refix, na.rm=T),
+      median_p_days_to_refix = median(days_to_refix / days_to_fix, na.rm=T),
+      median_days_to_backout = median(days_to_backout, na.rm=T),
+      median_days_to_early_backout = median(days_to_early_backout, na.rm=T),
+      median_days_to_late_backout = median(days_to_late_backout, na.rm=T),
       #
-      median_hours_to_reopen = median(hours_to_reopen, na.rm=T),
-      median_hours_to_buildok = median(hours_to_buildok, na.rm=T),
-      median_p_hours_to_rebuildok = median(hours_to_rebuildok / hours_to_buildok, na.rm=T),
-      median_hours_to_rebuildok = median(hours_to_rebuildok, na.rm=T),
+      median_days_to_reopen = median(days_to_reopen, na.rm=T),
+      median_days_to_buildok = median(days_to_buildok, na.rm=T),
+      median_p_days_to_rebuildok = median(days_to_rebuildok / days_to_buildok, na.rm=T),
+      median_days_to_rebuildok = median(days_to_rebuildok, na.rm=T),
       #
       # Bad fix etc.
-      median_hours_to_badfix = median(ifelse(has_backout, hours_to_fix, NA), na.rm=T),
-      median_p_hours_to_badfix = median_hours_to_badfix / median_hours_to_fix,
+      median_days_to_badfix = median(ifelse(has_backout, days_to_fix, NA), na.rm=T),
+      median_p_days_to_badfix = median_days_to_badfix / median_days_to_fix,
       #
-      median_hours_to_badbuildok = median(ifelse(has_reopen, hours_to_buildok, NA), na.rm=T),
-      median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,
+      median_days_to_badbuildok = median(ifelse(has_reopen, days_to_buildok, NA), na.rm=T),
+      median_p_days_to_badbuildok = median_days_to_badbuildok / median_days_to_buildok,
       #
-      median_hours_to_badbuildok = median(ifelse(has_reopen, hours_to_buildok, NA), na.rm=T),
-      median_p_hours_to_badbuildok = median_hours_to_badbuildok / median_hours_to_buildok,      
+      median_days_to_badbuildok = median(ifelse(has_reopen, days_to_buildok, NA), na.rm=T),
+      median_p_days_to_badbuildok = median_days_to_badbuildok / median_days_to_buildok,      
       #
       # review
-      median_hours_to_review_ask = median(hours_to_review_ask, na.rm=T),
-      median_hours_to_review_plus = median(hours_to_review_plus, na.rm=T),
-      median_hours_to_review_minus = median(hours_to_review_minus, na.rm=T),
+      median_days_to_review_ask = median(days_to_review_ask, na.rm=T),
+      median_days_to_review_plus = median(days_to_review_plus, na.rm=T),
+      median_days_to_review_minus = median(days_to_review_minus, na.rm=T),
       #
       #
-      mean_hours_to_fix = mean(hours_to_fix, na.rm=T),
-      mean_hours_to_backout = mean(hours_to_backout, na.rm=T),
-      mean_hours_to_reopen = mean(hours_to_reopen, na.rm=T),
-      mean_hours_to_buildok = mean(hours_to_buildok, na.rm=T))
+      mean_days_to_fix = mean(days_to_fix, na.rm=T),
+      mean_days_to_backout = mean(days_to_backout, na.rm=T),
+      mean_days_to_reopen = mean(days_to_reopen, na.rm=T),
+      mean_days_to_buildok = mean(days_to_buildok, na.rm=T))
 
   invisible(ret)
 }
