@@ -73,7 +73,7 @@ bug_data <- readRDS("../data/firefox-bug-data.rds")
   badreview_ask / (badreview_ask + goodreview_ask)
 
   # is second fix time positively correlated to time-to-withdraw?
-  df <- subset(bug_data, !is.na(days_to_refix))
+  df <- subset(bug_data, !is.na(days_to_refix)):
   cor.test(df$days_to_refix, df$days_to_backout)
   cor.test(df$days_to_refix, df$days_to_fix)
   # (same for second attached patch)

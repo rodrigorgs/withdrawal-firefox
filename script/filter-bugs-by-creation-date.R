@@ -1,4 +1,6 @@
 rm(list = ls())
+library(dplyr)
+
 bug_data <- readRDS("../data/firefox-bug-data.rds")
 
 ##

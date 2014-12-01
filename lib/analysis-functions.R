@@ -115,10 +115,10 @@ rowify_binary <- function(title, x, reference_time_column, column) {
   strvalues <- c(
     title,
     "",
-    sprintf("%3.2f%%", mean(z[[column]], na.rm=T) * 100),
+    sprintf("%3.1f%%", mean(z[[column]], na.rm=T) * 100),
     "",
-    sprintf("%3.2f%%", mean(planned, na.rm=T) * 100),
-    sprintf("%3.2f%%", mean(rapid, na.rm=T) * 100),
+    sprintf("%3.1f%%", mean(planned, na.rm=T) * 100),
+    sprintf("%3.1f%%", mean(rapid, na.rm=T) * 100),
     stars_for_pvalue(pvalue))
   strvalues
 }
@@ -130,11 +130,11 @@ rowify_continuous <- function(title, x, reference_time_column, column) {
 
   strvalues <- c(
     title,
-    sprintf("%3.2f", quantile(z[[column]], 0.25, na.rm=T)),
-    sprintf("%3.2f", quantile(z[[column]], 0.50, na.rm=T)),
-    sprintf("%3.2f", quantile(z[[column]], 0.75, na.rm=T)),
-    sprintf("%3.2f", median(planned, na.rm=T)),
-    sprintf("%3.2f", median(rapid, na.rm=T)),
+    sprintf("%3.1f", quantile(z[[column]], 0.25, na.rm=T)),
+    sprintf("%3.1f", quantile(z[[column]], 0.50, na.rm=T)),
+    sprintf("%3.1f", quantile(z[[column]], 0.75, na.rm=T)),
+    sprintf("%3.1f", median(planned, na.rm=T)),
+    sprintf("%3.1f", median(rapid, na.rm=T)),
     stars_for_pvalue(pvalue)
     )
   strvalues
@@ -148,20 +148,26 @@ rowify_count <- function(title, x, reference_time_column, column) {
   strvalues <- c(
     title,
     "",
-    sprintf("%3.2f", overall),
+    sprintf("%3.1f", overall),
     "",
-    sprintf("%3.2f", planned[[column]]),
-    sprintf("%3.2f", rapid[[column]]),
+    sprintf("%3.1f", planned[[column]]),
+    sprintf("%3.1f", rapid[[column]]),
     "(N/A)")
   strvalues
 }
 
-myplot <- function(data, y, x, ylim=NULL, ...) {
+myplot <- function(data, y, x, ylim=NULL, xlab=NULL, ylab=NULL, ...) {
   if (is.null(ylim)) {
     ylim <- c(0, max(data[[y]]))
   }
+  if (is.null(xlab)) {
+    xlab <- x
+  }
+  if (is.null(ylab)) {
+    ylab <- y
+  }
 
-  plot(data[[x]], data[[y]], type='l', ylim=ylim, xlab=x, ylab=y, ...)
+  plot(data[[x]], data[[y]], type='l', ylim=ylim, xlab=xlab, ylab=ylab, ...)
 
   abline(v=as.yearmon('2011-03-22'), lty=2) # start development of version 5
   abline(v=as.yearmon('2011-06-08'), lty=2) # start of mozilla-inbound

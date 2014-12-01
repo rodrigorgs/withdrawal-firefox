@@ -1,7 +1,7 @@
-all: data/firefox-backouts.rds data/firefox-bug-data.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-developers-month.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/aggregate-events-to-bugs.html report/analyse-developers.html report/analyse-venn.html report/analyse.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
+all: data/firefox-backouts.rds data/firefox-bug-data.rds data/firefox-bugs-by-creation.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-developers-month.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/aggregate-events-to-bugs.html report/analyse-developers.html report/analyse-venn.html report/analyse.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/filter-bugs-by-creation-date.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
 
 clean:
-	rm -f data/firefox-backouts.rds data/firefox-bug-data.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-developers-month.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/aggregate-events-to-bugs.html report/analyse-developers.html report/analyse-venn.html report/analyse.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
+	rm -f data/firefox-backouts.rds data/firefox-bug-data.rds data/firefox-bugs-by-creation.rds data/firefox-bugs.rds data/firefox-commit-data.rds data/firefox-commits.rds data/firefox-developers-month.rds data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-events.rds data/firefox-fixes.rds data/firefox-reviews.rds data/mozilla-hg-log.bz2 report/aggregate-events-to-bugs.html report/analyse-developers.html report/analyse-venn.html report/analyse.html report/detect-backout-commits.html report/detect-fix-commits.html report/detect-reviews.html report/filter-bugs-by-creation-date.html report/label-events.html report/load-firefox-bugs.html report/load-firefox-commits.html report/load-firefox-events.html report/transform-commit-data.html report/transform-event-data.html
 
 data/firefox-bug-data.rds: data/firefox-event-data.rds data/firefox-event-labels.rds data/firefox-bugs.rds script/aggregate-events-to-bugs.R
 	./run-script.rb script/aggregate-events-to-bugs.R
@@ -15,7 +15,7 @@ data/firefox-developers-month.rds: data/firefox-event-labels.rds script/analyse-
 report/analyse-developers.html: data/firefox-event-labels.rds script/analyse-developers.R
 	./run-script.rb script/analyse-developers.R
 
-report/analyse-venn.html: data/firefox-bug-data.rds data/firefox-event-labels.rds script/analyse-venn.R
+report/analyse-venn.html: data/firefox-bugs-by-creation.rds data/firefox-event-labels.rds script/analyse-venn.R
 	./run-script.rb script/analyse-venn.R
 
 report/analyse.html: data/firefox-bug-data.rds data/firefox-developers-month.rds script/analyse.R
@@ -38,6 +38,12 @@ data/firefox-reviews.rds: data/firefox-events.rds script/detect-reviews.R
 
 report/detect-reviews.html: data/firefox-events.rds script/detect-reviews.R
 	./run-script.rb script/detect-reviews.R
+
+data/firefox-bugs-by-creation.rds: data/firefox-bug-data.rds script/filter-bugs-by-creation-date.R
+	./run-script.rb script/filter-bugs-by-creation-date.R
+
+report/filter-bugs-by-creation-date.html: data/firefox-bug-data.rds script/filter-bugs-by-creation-date.R
+	./run-script.rb script/filter-bugs-by-creation-date.R
 
 data/firefox-event-labels.rds: data/firefox-event-data.rds data/firefox-reviews.rds script/label-events.R
 	./run-script.rb script/label-events.R
